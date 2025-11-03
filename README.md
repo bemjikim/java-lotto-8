@@ -71,7 +71,7 @@
         - Exception Case가 발생시 재귀문을 활용하여 다시 입력받을 수 있도록 한다!
 - ',' 구분자를 기준으로 문자열을 분리 후 List\<Integer> 형식으로 저장
         
-        - split()을 담당하는 클래스 or 메서드를 만들어야 한다!
+        - split()을 담당하는 클래스 or 메서드를 만들어야 한다! -> 메서드로 했음..!
         
         - TDD: 1, 2, 3, 4, 5, 6를 입력했을 때 -> [1, 2, 3, 4, 5, 6]을 return하는지 확인      
 
@@ -98,11 +98,18 @@
 
 ### 3. 로또 번호와 당첨 번호랑 비교
 
-- 로또 번호와 당첨 번호를 비교한다 (List\<Integer> 끼리)
+- 로또 번호와 당첨 번호를 비교한다 (당첨번호 객체와 로또 번호 객체를 비교했다!)
     
-        - 매칭_개수 = 당첨번호.stream()
-                             .filter(로또번호::contains)
-                             .count();
+        List<WinningLotto> winningLottoNumber = findWinningLotto();
+        List<Lotto> purchaseLottoNumbers = purchaseLottoService.findPurchaseLotto();
+        List<Integer> compareResult = new ArrayList<>();
+
+        for (WinningLotto winningLotto : winningLottoNumber) {
+            purchaseLottoNumbers.forEach(lotto -> {
+                int matchCount = winningLotto.countMatchedNumbers(lotto);
+                compareResult.add(matchCount);
+            });
+        }
 
         - TDD: 임의의 로또 번호와 임의의 당첨 번호를 선정한 후 비교 테스트
 
@@ -111,24 +118,38 @@
 ### 4. 로또 당첨 출력 
 
 - enums 파일을 따로 관리해서 출력문을 활용
-  - for문과 format을 활용하여 값을 바로바로 넣을 수 있도록 함
+  - matchCount, Message, Prize를 선언해서 enum에서 바로 수익률을 구할 수 있도록 변환함!
         
-        RESULT_STATISTICS_OUTPUT_MESSAGE("당첨 통계\n" + "---"),
-        THREE_MATCH_OUTPUT_MESSAGE("3개 일치 (5,000원) - %d개"),
-        FOUR_MATCH_OUTPUT_MESSAGE("4개 일치 (50,000원) - %d개"),
-        FIVE_MATCH_OUTPUT_MESSAGE("5개 일치 (1,500,000원) - %d개"),
-        FIVE_AND_BONUS_MATCH_OUTPUT_MESSAGE("5개 일치, 보너스 볼 일치 (30,000,000원) - %d개"),
-        SIX_MATCH_OUTPUT_MESSAGE("6개 일치 (2,000,000,000원) - %d개"),
-        RESULT_OUTPUT_MESSAGE("총 수익률은 %.1f%%입니다.");
+            NUMBER_OF_BUY_OUTPUT_MESSAGE(-1, "%d개를 구매했습니다.", 0),
+            RESULT_STATISTICS_OUTPUT_MESSAGE(-2, "당첨 통계\n---", 0),
+            THREE_MATCH_OUTPUT_MESSAGE(3, "3개 일치 (5,000원) - %d개", 5_000),
+            FOUR_MATCH_OUTPUT_MESSAGE(4, "4개 일치 (50,000원) - %d개", 50_000),
+            FIVE_MATCH_OUTPUT_MESSAGE(5, "5개 일치 (1,500,000원) - %d개", 1_500_000),
+            FIVE_AND_BONUS_MATCH_OUTPUT_MESSAGE(51, "5개 일치, 보너스 볼 일치 (30,000,000원) - %d개", 30_000_000),
+            SIX_MATCH_OUTPUT_MESSAGE(6, "6개 일치 (2,000,000,000원) - %d개", 2_000_000_000),
+            RESULT_OUTPUT_MESSAGE(-3, "총 수익률은 %.1f%%입니다.", 0);
         
-        public String format(Object... args) {
-              return String.format(message, args); 
-          }
+            private final int matchCount;
+            private final String message;
+            private final long prize;
+        
+            private LottoOutputMessage(int matchCount, String message, long prize) {
+                this.matchCount = matchCount;
+                this.message = message;
+                this.prize = prize;
+            }
 
+  - 출력할 때 원하는 출력문을 구분하기 위해 MatchCount변수를 활용했다!
+
+            if (this.matchCount <= 0) {
+              return 0;
+              }
+            
+            이러면 message를 구분하기 쉬워짐!
 ### ++ 더 생각해봐야할 것들
 
 - 랜덤한 값으로 이루어진 로또 번호들을 어디에 저장하지?
 
-        - PurchaseLottos 클래스 생성
-        - 클래스 안에 List<Lotto> lottoitem 을 선언
-               - lottoitem.add(6가지_중복되지_않는_로또_숫자_인스턴스) 를 하면 될 것 같다
+        - Repository 패키지 생성으로 해결!!!
+            - DB 역할을 대신 해줄 수 있음!
+            - Repository <-> Service <-> Domain 으로 정보 교환을 자유롭게 할 수 있도록 구현!
