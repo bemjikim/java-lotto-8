@@ -1,23 +1,24 @@
 package lotto.view;
 
 import camp.nextstep.edu.missionutils.Console;
+import lotto.enums.ErrorMessage;
 import lotto.enums.LottoInputMessage;
 
 import java.util.NoSuchElementException;
 
 public class InputView {
 
-    public String readWithValidateCashInput() {
-        System.out.println(LottoInputMessage.CASH_INPUT_MESSAGE);
+    public int readWithValidateCashInput() {
+        LottoInputMessage.CASH_INPUT_MESSAGE.printMessage();
 
         String userInput = readInput();
-        validateIsNumberWithBlank(userInput);
+        int cash = validateIsNumberWithBlank(userInput);
 
-        return userInput;
+        return cash;
     }
 
     public String readWithValidateNumberInput() {
-        System.out.println(LottoInputMessage.NUMBER_INPUT_MESSAGE);
+        LottoInputMessage.NUMBER_INPUT_MESSAGE.printMessage();
 
         String userInput = readInput();
         validateIsBlank(userInput);
@@ -25,13 +26,13 @@ public class InputView {
         return userInput;
     }
 
-    public String readWithValidateBonusNumberInput() {
-        System.out.println(LottoInputMessage.BONUS_NUMBER_INPUT_MESSAGE);
+    public int readWithValidateBonusNumberInput() {
+        LottoInputMessage.BONUS_NUMBER_INPUT_MESSAGE.printMessage();
 
         String userInput = readInput();
-        validateIsNumberWithBlank(userInput);
+        int bonusNumber = validateIsNumberWithBlank(userInput);
 
-        return userInput;
+        return bonusNumber;
     }
 
     private String readInput() {
@@ -48,12 +49,22 @@ public class InputView {
 
     private void validateIsBlank(String userInput) {
         if (userInput.isBlank()) {
-            //TODO: Print Error Message
+            throw new IllegalArgumentException(ErrorMessage.INVALID_BLANK_INPUT.getMessage());
         }
     }
 
-    private void validateIsNumberWithBlank(String userInput) {
+    private int validateIsNumberWithBlank(String userInput) {
         validateIsBlank(userInput);
-        // TODO: 숫자인지 검증
+
+        try {
+            int parseIntUserInput = Integer.parseInt(userInput);
+
+            return parseIntUserInput;
+
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(ErrorMessage.INVALID_NONE_NUMBER.getMessage());
+        }
     }
 }
+
+
